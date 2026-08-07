@@ -6,6 +6,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
+import mongoose from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -69,11 +70,18 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(updateUserDto: UpdateUserDto) {
+    const { _id, ...updateDataUser } = updateUserDto;
+    return await this.userModel.updateOne({ _id: _id }, { ...updateDataUser });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    // check id
+    if (mongoose.isValidObjectId(id)) {
+      // delete
+      return await this.userModel.deleteOne({ _id: id });
+    } else {
+      throw new BadRequestException('Invalid ID format of mongodb');
+    }
   }
 }
