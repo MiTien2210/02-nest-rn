@@ -1,13 +1,24 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 import { LocalAuthGuard } from './passport/local-auth.guard';
 import { Public } from '@/decorators/customize';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mailerService: MailerService,
+  ) {}
 
   // Login cần thêm @Public để nó không bị check jwt,
   // Nếu có public thì sẽ keep qua @UseGuards(JwtAuthGuard) không check
@@ -23,5 +34,18 @@ export class AuthController {
   @Public()
   register(@Body() registerDto: CreateAuthDto) {
     return this.authService.handleRegister(registerDto);
+  }
+
+  @Get('mail')
+  @Public()
+  testMail() {
+    this.mailerService.sendMail({
+      to: 'meowmeowmeowgiameo@gmail.com',
+      // from: 'noreply@nestjs.com',
+      subject: 'Testing Nest MailerModule',
+      text: 'welcome',
+      html: '<b>Hello World Tien Tien Tien Tien</b>',
+    });
+    return 'send mail ok';
   }
 }
